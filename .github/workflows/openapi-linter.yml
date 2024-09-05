@@ -2,8 +2,6 @@ name: OpenAPI Specification Validation
 
 on:
   pull_request:
-    paths:
-      - xkcd-data-hub-api.yaml
 
 jobs:
   validate:
