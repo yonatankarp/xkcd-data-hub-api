@@ -1,0 +1,25 @@
+name: OpenAPI Specification Validation
+
+on:
+  pull_request:
+    paths:
+      - xkcd-data-hub-api.yaml
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4.0.2
+        with:
+          node-version: '20'
+
+      - name: Install Linter
+        run: npm install @redocly/cli -g
+
+      - name: Validate OpenAPI Specification
+        run: redocly lint ./xkcd-data-hub-api.yaml --format=stylish
