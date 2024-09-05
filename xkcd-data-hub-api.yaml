@@ -14,6 +14,9 @@ servers:
   - url: http://localhost:8080
     description: Local development environment
 
+security:
+  - ApiKeyAuth: []
+
 tags:
   - name: GetByComicId
     description: Retrieve XKCD comic by ID
@@ -68,7 +71,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApiError"
 
-  /xkcd/webcomics/search:
+  /xkcd/webcomics/search-as-you-type:
     get:
       operationId: search_as_you_type
       summary: Search XKCD comics by keyword
@@ -91,9 +94,8 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ComicResponse"
+                $ref: "#/components/schemas/ComicSearchResponse"
+
         "400":
           description: The request was invalid.
           content:
@@ -123,6 +125,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ComicResponse"
+        "404":
+            description: No comics was fetched yet.
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/ApiError"
         "500":
           description: An unexpected server error occurred.
           content:
@@ -131,6 +139,12 @@ paths:
                 $ref: "#/components/schemas/ApiError"
 
 components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
   schemas:
     ComicResponse:
       type: object
@@ -240,6 +254,14 @@ components:
           description: The creation date of the XKCD comic
           format: date-time
           example: "2024-06-30T14:48:00.000Z"
+
+    ComicSearchResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/ComicResponse"
 
     ApiError:
       type: object
