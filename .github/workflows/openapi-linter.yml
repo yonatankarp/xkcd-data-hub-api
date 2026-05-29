@@ -25,9 +25,29 @@ jobs:
   dependabot_auto_merge:
     needs: validate
     if: ${{ github.actor == 'dependabot[bot]' }}
+    runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: write
-    uses: yonatankarp/github-actions/.github/workflows/dependabot-auto-merge.yml@v2
-    secrets:
-      GITHUB_PAT: ${{ secrets.REVIEWER_GITHUB_TOKEN }}
+    steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Approval for Dependabot PR
+        if: ${{ steps.metadata.outputs.update-type == 'version-update:semver-minor' ||
+          steps.metadata.outputs.update-type == 'version-update:semver-patch' }}
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.REVIEWER_GITHUB_TOKEN }}
+        run: gh pr review --approve "$PR_URL"
+
+      - name: Merge Dependabot PR
+        if: ${{ steps.metadata.outputs.update-type == 'version-update:semver-minor' ||
+          steps.metadata.outputs.update-type == 'version-update:semver-patch' }}
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.REVIEWER_GITHUB_TOKEN }}
+        run: gh pr merge --admin --rebase "$PR_URL"
